@@ -145,7 +145,7 @@ def output(opt,res):
             print   "The sun has set - no data"
             return  0
         else:
-            print   "0.0|0.0|0.0|0.0|0.0"
+            print   "0.0|0.0|90.0|0.0|0.0"
             return  0
 
     elif not opt.verbose:
