@@ -30,36 +30,17 @@
 
 import sys, argparse, math, time, calendar
 
-def output(opt,res):
-
-    print "--------------------------------------------------------------------"
-    print "%d.%d.%d | %d | %f | " % (opt.day, opt.month, opt.year, res['DoY'], res['ToD'] )
-    print "--------------------------------------------------------------------"
-    print "Solar Constant                               : %s" % opt.sc
-    print "Atmospheric turbidity coefficient            : %s" % opt.at_tc
-    print "--------------------------------------------------------------------"
-    print "Equation of time                             : %s min" % res['eqt']
-    print "Inverse relative distance factor             : %s" % res['sol_r']
-    print "Sun declination                              : %s°"  % res['sol_d']
-    print "Solar Noon                                   : %s "  % res['sol_n']
-    print "Barometric Pressure at site                  : %s kPa" % opt.at_p
-    print "Estimated Vapor Pressure at site             : %s kPa" % res['at_vp']
-    print "Estimated extraterrestrial Radiation         : %s W/m²" % res['ETR']
-    print "Estimated precipitable water in Atmosphere   : %s mm" % res['at_pw']
-    print "Clearness index for direct beam radiation    : %s" % res['CIDBR']
-    print "Transmissivity index for diffuse radiation   : %s" % res['TIDR']
-    print "--------------------------------------------------------------"
-    print "Model estimated Shortwave Radiation (RSO)    : \033[1;33m%3.1f W/m²\033[0m" % res['RSO']
-    print "Optimum Elevation of PV-Panel                : \033[1;37m%02.1f°\033[0m" % res['sol_z']
-    print "Model estimated Max. PV-Power Output         : \033[1;32m%3.1f W\033[0m \033[1;37m@ %d%% Mod Eff\033[0m" % (res['pv_max'], opt.pv_e)
-    print "Model estimated PV-Module temp conv. loss    : -\033[1;31m%2.1f W / %2.1f%%\033[0m" % (res['pv_lp'] , res['pv_l'] )
-    print "Model estimated PV-Module aging loss         : -\033[1;31m%03.1f W\033[0m" % res['pv_la']
-    print "--------------------------------------------------------------"
-    print "Model estimated Real PV-Power Output         : \033[1;32m%3.1f W\033[0m" % res['pv_out']
+################################################################################
+##  Inputs & Defaults  #########################################################
+################################################################################
 
 def options(arg):
 
-    # Set Solar Constant - See docs/solar-constant.pdf for more info. ##########
+    arg.add_argument( "-v", "--verbose"                                        ,\
+    action          = "store_true"                                             ,\
+    help            = "Verbose output"                                          )
+
+    # Decreased Solar Constant - See docs/solar-constant.pdf for update info. ##
     # Default value of 1361.0 should IMHO serve as a good average point
     # between the min/max values over the 11-year sun cycle.
 
@@ -80,7 +61,10 @@ def options(arg):
     help            = "Longitude in decimal degrees [Default: 11.0]"           ,\
     default         = 11.0                                                      )
 
-    # Optional, only needed if barometric pressure not available to compute it #
+    # Optional, only needed if barometric pressure not available to compute it.
+    # If no value is supplied to either, an altitude of 0m (NN) will be default
+    # Obviously, this is only a fallback and using the actual barometric pressure
+    # should always be preferred to yield a less averagish result.
 
     arg.add_argument( "-alt"                                                   ,\
     type            = float                                                    ,\
@@ -150,6 +134,61 @@ def options(arg):
     default         = 0.98                                                      )
 
 ################################################################################
+##  Outputs  ###################################################################
+################################################################################
+
+def output(opt,res):
+
+    if res['sol_z'] > 90:
+
+        if opt.verbose:
+            print   "The sun has set - no data"
+            return  0
+        else:
+            print   "0.0|0.0|0.0|0.0|0.0"
+            return  0
+
+    elif not opt.verbose:
+
+            print   "%.1f|%.1f|%.1f|%.1f|%.1f" %                                \
+                    (                                                           \
+                        res['ETR'], res['RSO'], res['sol_z']                   ,\
+                        res['pv_max'], res['pv_out']                            \
+                    )
+
+            return  0
+
+    else:
+
+        print "--------------------------------------------------------------------"
+        print "%d.%d.%d | %d | %f | " % (opt.day, opt.month, opt.year, res['DoY'], res['ToD'] )
+        print "--------------------------------------------------------------------"
+        print "Solar Constant                               : %s" % opt.sc
+        print "Atmospheric turbidity coefficient            : %s" % opt.at_tc
+        print "--------------------------------------------------------------------"
+        print "Equation of time                             : %s min" % res['eqt']
+        print "Inverse relative distance factor             : %s" % res['sol_r']
+        print "Sun declination                              : %s°"  % res['sol_d']
+        print "Solar Noon                                   : %s "  % res['sol_n']
+        print "Barometric Pressure at site                  : %s kPa" % opt.at_p
+        print "Estimated Vapor Pressure at site             : %s kPa" % res['at_vp']
+        print "Estimated extraterrestrial Radiation         : %s W/m²" % res['ETR']
+        print "Estimated precipitable water in Atmosphere   : %s mm" % res['at_pw']
+        print "Clearness index for direct beam radiation    : %s" % res['CIDBR']
+        print "Transmissivity index for diffuse radiation   : %s" % res['TIDR']
+        print "--------------------------------------------------------------"
+        print "Model estimated Shortwave Radiation (RSO)    : \033[1;33m%3.1f W/m²\033[0m" % res['RSO']
+        print "Optimum Elevation of PV-Panel                : \033[1;37m%02.1f°\033[0m" % res['sol_z']
+        print "Model estimated Max. PV-Power Output         : \033[1;32m%3.1f W\033[0m \033[1;37m@ %d%% Mod Eff\033[0m" % (res['pv_max'], opt.pv_e)
+        print "Model estimated PV-Module temp conv. loss    : -\033[1;31m%2.1f W / %2.1f%%\033[0m" % (res['pv_lp'] , res['pv_l'] )
+        print "Model estimated PV-Module aging loss         : -\033[1;31m%03.1f W\033[0m" % res['pv_la']
+        print "--------------------------------------------------------------"
+        print "Model estimated Real PV-Power Output         : \033[1;32m%3.1f W\033[0m" % res['pv_out']
+        return 0
+
+
+
+################################################################################
 ##  MAIN  ######################################################################
 ################################################################################
 
@@ -174,9 +213,9 @@ def main():
 
     res             = {}
 
-    # get Julian Day (Day of Year)
+    # Compute Julian Day (Day of Year) #########################################
 
-    if              calendar.isleap(opt.year):
+    if calendar.isleap(opt.year):
 
         # Leap year (366 days)
         lMonth      = [0,31,60,91,121,152,182,213,244,274,305,335,366]
@@ -186,8 +225,9 @@ def main():
         # Normal year (365 days)
         lMonth      = [0,31,59,90,120,151,181,212,243,273,304,334,365]
 
-    res['DoY']      = lMonth[opt.month-1] + opt.day
-    res['ToD']      = opt.hour
+    res['DoY']      = lMonth[opt.month - 1] + opt.day
+    res['ToD']      = float(opt.hour + (1.0 / 3600.0)                           \
+                    * ((opt.min * 60.0) + opt.sec)                              )
 
     # Solve equation of time ###################################################
     # (More info on http://www.srrb.noaa.gov/highlights/sunrise/azel.html)
@@ -203,18 +243,18 @@ def main():
 
     # Compute inverse relative distance factor (Distance between Earth and Sun)
 
-    res['sol_r']    = 1.0 / (1.0 - 9.464e-4 * math.sin(res['DoY'])                      \
-                    - 0.01671  * math.cos(res['DoY'])                                \
-                    - 1.489e-4 * math.cos(2.0 * res['DoY'])                           \
-                    - 2.917e-5 * math.sin(3.0 * res['DoY'])                           \
+    res['sol_r']    = 1.0 / (1.0 - 9.464e-4 * math.sin(res['DoY'])              \
+                    - 0.01671  * math.cos(res['DoY'])                           \
+                    - 1.489e-4 * math.cos(2.0 * res['DoY'])                     \
+                    - 2.917e-5 * math.sin(3.0 * res['DoY'])                     \
                     - 3.438e-4 * math.cos(4.0 * res['DoY'])) ** 2
 
 
     # Compute solar declination ################################################
 
-    res['sol_d']    = (math.asin(0.39785 * (math.sin(((278.97 \
-                    + (0.9856 * res['DoY'])) + (1.9165 \
-                    * (math.sin((356.6 + (0.9856 * res['DoY']))                \
+    res['sol_d']    = (math.asin(0.39785 * (math.sin(((278.97                   \
+                    + (0.9856 * res['DoY'])) + (1.9165                          \
+                    * (math.sin((356.6 + (0.9856 * res['DoY']))                 \
                     * (math.pi / 180))))) * (math.pi / 180)))) * 180) / math.pi
 
 
@@ -226,18 +266,27 @@ def main():
 
     # Compute solar zenith angle in DEG ####################################
 
-    res['sol_z']    = math.acos(((math.sin(opt.lat * (math.pi / 180)))        \
-                    * (math.sin(res['sol_d'] * (math.pi / 180))))                       \
-                    + (((math.cos(opt.lat * ((math.pi / 180))))               \
-                    * (math.cos(res['sol_d'] * (math.pi / 180))))                       \
-                    * (math.cos((res['ToD'] - res['sol_n']) \
+    res['sol_z']    = math.acos(((math.sin(opt.lat * (math.pi / 180)))          \
+                    * (math.sin(res['sol_d'] * (math.pi / 180))))               \
+                    + (((math.cos(opt.lat * ((math.pi / 180))))                 \
+                    * (math.cos(res['sol_d'] * (math.pi / 180))))               \
+                    * (math.cos((res['ToD'] - res['sol_n'])                     \
                     * (math.pi /12))))) * (180/math.pi)
 
-    # in extreme latitude, values over 90 may occurs.
-    if res['sol_z'] > 90:
-        res['sol_z']= 90
+    # A solar zenith angle value of > 90 usually indicates that the sun has set
+    # (from observer's perspective at the given location for this computation).
+    # However, in extreme latitudes, valid values over 90 may occur. If you live
+    # in such a place and happen to stumble upon this code, please report back
+    # when you use it so we can find a better fix for this than the follwing hack.
+    # Unfortunately, if we don't fail safely here, we are confronted with some
+    # nasty division by zero business further on, so...
 
-    # Barometric pressure at site ###########################################
+    if res['sol_z'] > 90:
+
+        output      (opt, res)
+        sys.exit    (0)
+
+    # Barometric pressure at site ##############################################
     # (this should be replaced by the real measured value) in kPa
 
     if opt.at_p:
@@ -248,26 +297,26 @@ def main():
         opt.at_p    = math.pow(((288 - (0.0065 * (opt.alt - 0))) / 288),\
                       (9.80665 / (0.0065 * 287))) * 101.325
 
-    # Estimate air vapor pressure in kPa ###################################
+    # Estimate air vapor pressure in kPa #######################################
 
     res['at_vp']    = (0.61121 * math.exp((17.502 * opt.at_t)                   \
-                    / (240.97 + opt.at_t)))                                   \
+                    / (240.97 + opt.at_t)))                                     \
                     * (opt.at_h / 100)
 
-    # Extraterrestrial radiation in W/m2 ###################################
+    # Extraterrestrial radiation in W/m2 #######################################
 
-    res['ETR']      = (opt.sc * res['sol_r'])                            \
+    res['ETR']      = (opt.sc * res['sol_r'])                                   \
                     * (math.cos(res['sol_z'] * (math.pi / 180)))
 
-    # Precipitable water in the atmosphere in mm ###########################
+    # Precipitable water in the atmosphere in mm ###############################
 
     res['at_pw']    = ((0.14 * res['at_vp']) * opt.at_p) + 2.1
 
-    # Clearness index for direct beam radiation [unitless] #################
+    # Clearness index for direct beam radiation [unitless] #####################
 
-    res['CIDBR']    = 0.98 * (math.exp(((-0.00146 * opt.at_p)                  \
-                    / (opt.at_tc * (math.sin((90 - res['sol_z'])                   \
-                    * (math.pi / 180))))) - (0.075 * (math.pow((res['at_pw']      \
+    res['CIDBR']    = 0.98 * (math.exp(((-0.00146 * opt.at_p)                   \
+                    / (opt.at_tc * (math.sin((90 - res['sol_z'])                \
+                    * (math.pi / 180))))) - (0.075 * (math.pow((res['at_pw']    \
                     / (math.sin((90 - res['sol_z']) * (math.pi / 180)))),0.4)))))
 
     # Transmissivity index for diffuse radiation [unitless] ####################
@@ -288,7 +337,7 @@ def main():
 
     res['pv_max']   = (res['RSO'] * opt.pv_a) / 100 * opt.pv_e
 
-    # Estimate conversion loss due to module temperature ###################
+    # Estimate conversion loss due to module temperature #######################
 
     res['pv_l']     = (opt.pv_t-25 ) * opt.pv_tc
     res['pv_lp']    = (res['pv_max'] / 100) * res['pv_l']
@@ -303,10 +352,8 @@ def main():
 
     output          (opt, res)
 
-    return 0
-
 ################################################################################
 
 if __name__ == '__main__':
-    rc              = main          ()
-    sys.exit                        (rc)
+    rc              = main()
+    sys.exit        (rc)
