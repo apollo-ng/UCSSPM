@@ -80,8 +80,8 @@ def options(arg):
     arg.add_argument( "-time"                                                  ,\
     type            = str                                                      ,\
     help            = "ISO Time HH:MM:SS [Default: "                            \
-                    + time.strftime("%H:%I:%S") + "]"                          ,\
-    default         = time.strftime("%H:%I:%S")                                 )
+                    + time.strftime("%H:%M:%S") + "]"                          ,\
+    default         = time.strftime("%H:%M:%S")                                 )
 
     # Environmental Conditions #################################################
 
@@ -116,7 +116,7 @@ def options(arg):
     arg.add_argument( "-pv_e"                                                  ,\
     type            = float                                                    ,\
     help            = "PV Panel Efficiency in Percent [Default: 16]"           ,\
-    default         = 16                                                        )
+    default         = 20                                                        )
 
     arg.add_argument( "-pv_t"                                                  ,\
     type            = float                                                    ,\
@@ -172,12 +172,12 @@ def output(opt,res):
         print "Solar Noon                                   : %s "  % res['sol_n']
         print "Barometric Pressure at site                  : %s kPa" % opt.at_p
         print "Estimated Vapor Pressure at site             : %s kPa" % res['at_vp']
-        print "Estimated extraterrestrial Radiation         : %s W/m²" % res['ETR']
+        print "Estimated extraterrestrial Radiation         : %s kW/m²" % res['ETR']
         print "Estimated precipitable water in Atmosphere   : %s mm" % res['at_pw']
         print "Clearness index for direct beam radiation    : %s" % res['CIDBR']
         print "Transmissivity index for diffuse radiation   : %s" % res['TIDR']
         print "--------------------------------------------------------------"
-        print "Model estimated Shortwave Radiation (RSO)    : \033[1;33m%3.1f W/m²\033[0m" % res['RSO']
+        print "Model estimated Global solar radiation (Rs)  : \033[1;33m%3.1f W/m²\033[0m" % res['RSO']
         print "Optimum Elevation of PV-Panel                : \033[1;37m%02.1f°\033[0m" % res['sol_z']
         print "Model estimated Max. PV-Power Output         : \033[1;32m%3.1f W\033[0m \033[1;37m@ %d%% Mod Eff\033[0m" % (res['pv_max'], opt.pv_e)
         print "Model estimated PV-Module temp conv. loss    : -\033[1;31m%2.1f W / %2.1f%%\033[0m" % (res['pv_lp'] , res['pv_l'] )
@@ -226,8 +226,7 @@ def main():
         lMonth      = [0,31,59,90,120,151,181,212,243,273,304,334,365]
 
     res['DoY']      = lMonth[opt.month - 1] + opt.day
-    res['ToD']      = float(opt.hour + (1.0 / 3600.0)                           \
-                    * ((opt.min * 60.0) + opt.sec)                              )
+    res['ToD']      = float(opt.hour + (opt.min/60.0) + (opt.sec/3600.0))
 
     # Solve equation of time ###################################################
     # (More info on http://www.srrb.noaa.gov/highlights/sunrise/azel.html)
