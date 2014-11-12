@@ -1,6 +1,8 @@
 # Unified Clear-Sky Solar Prediction Model
 
+Currently being tested and fed with real word data on:
 
+https://apollo.open-resource.org/flight-control/vfcc/#/dashboard/db/odyssey-solar-power
 
 ## Support & Contact
 
