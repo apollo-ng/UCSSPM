@@ -24,7 +24,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
 
@@ -160,33 +160,34 @@ def output(opt,res):
 
     else:
 
-        print "--------------------------------------------------------------------"
-        print "%d.%d.%d | %d | %f | " % (opt.day, opt.month, opt.year, res['DoY'], res['ToD'] )
-        print "--------------------------------------------------------------------"
-        print "Solar Constant                               : %s" % opt.sc
-        print "Atmospheric turbidity coefficient            : %s" % opt.at_tc
-        print "--------------------------------------------------------------------"
-        print "Equation of time                             : %s min" % res['eqt']
-        print "Inverse relative distance factor             : %s" % res['sol_r']
-        print "Sun declination                              : %s°"  % res['sol_d']
-        print "Solar Noon                                   : %s "  % res['sol_n']
-        print "Barometric Pressure at site                  : %s kPa" % opt.at_p
-        print "Estimated Vapor Pressure at site             : %s kPa" % res['at_vp']
-        print "Estimated extraterrestrial Radiation         : %s W/m²" % res['ETR']
-        print "Estimated precipitable water in Atmosphere   : %s mm" % res['at_pw']
-        print "Clearness index for direct beam radiation    : %s" % res['CIDBR']
-        print "Transmissivity index for diffuse radiation   : %s" % res['TIDR']
-        print "--------------------------------------------------------------"
-        print "Model estimated Global solar radiation (Rs)  : \033[1;33m%3.1f W/m²\033[0m" % res['RSO']
-        print "Optimum Elevation of PV-Panel                : \033[1;37m%02.1f°\033[0m" % res['sol_z']
-        print "Model estimated Max. PV-Power Output         : \033[1;32m%3.1f W\033[0m \033[1;37m@ %d%% Mod Eff\033[0m" % (res['pv_max'], opt.pv_e)
+        print "--------+--------------------------------------------------------"
+        print " UCSSPM | Clear-Sky Prediction for %s @ %s" % (opt.date, opt.time )
+        print "--------+--------------------------------------------------------"
+        print " Solar Constant                               : %s kW/m² @ 1AU" % opt.sc
+        print " Atmospheric turbidity coefficient            : %s" % opt.at_tc
+        print "-----------------------------------------------------------------"
+        print " Equation of time                             : %s min" % res['eqt']
+        print " Inverse relative distance factor             : %s" % res['sol_r']
+        print " Sun declination                              : %s°"  % res['sol_d']
+        print " Solar Noon                                   : %s "  % res['sol_n']
+        print " Barometric Pressure at site                  : %s kPa" % opt.at_p
+        print " Estimated Vapor Pressure at site             : %s kPa" % res['at_vp']
+        print " Estimated Extraterrestrial Radiation         : %s W/m²" % res['ETR']
+        print " Estimated precipitable water in Atmosphere   : %s mm" % res['at_pw']
+        print " Clearness index for direct beam radiation    : %s" % res['CIDBR']
+        print " Transmissivity index for diffuse radiation   : %s" % res['TIDR']
+        print "-----------------------------------------------------------------"
+        print " Estimated Max. global solar radiation (Rs)   : \033[1;33m%3.1f W/m²\033[0m" % res['RSO']
+        print "-----------------------------------------------------------------"
+        print " Optimum Elevation of PV-Panel                : \033[1;37m%02.1f°\033[0m" % res['sol_z']
+        print " Estimated Max. Clear-Sky PV-Power Output     : \033[1;32m%3.1f W\033[0m \033[1;37m@ %d%% Peff\033[0m" % (res['pv_max'], opt.pv_e)
         if res['pv_lp'] >= 0:
-            print "Model estimated PV-Module temp conv. loss    : -\033[1;31m%2.1f W / %2.1f%%\033[0m" % (res['pv_lp'] , res['pv_l'] )
+            print " PV-Panel temperature (%2.1f °C) compensation  - \033[1;31m%2.1f W / %2.1f%%\033[0m" % (opt.pv_t, res['pv_lp'] , res['pv_l'] )
         else:
-            print "Model estimated PV-Module temp conv. gain    : +\033[1;32m%2.1f W / %2.1f%%\033[0m" % (res['pv_lp']*-1 , res['pv_l']*-1 )
-        print "Model estimated PV-Module aging loss         : -\033[1;31m%03.1f W\033[0m" % res['pv_la']
-        print "--------------------------------------------------------------"
-        print "Model estimated Real PV-Power Output         : \033[1;32m%3.1f W\033[0m" % res['pv_out']
+            print " PV-Panel temperature (%2.1f °C) compensation  + \033[1;32m%2.1f W / %2.1f%%\033[0m" % (opt.pv_t, res['pv_lp']*-1 , res['pv_l']*-1 )
+        print " PV-Panel aging loss                          - \033[1;31m%03.1f W\033[0m" % res['pv_la']
+        print "-----------------------------------------------------------------"
+        print " Compensated Max. Clear-Sky PV-Power Output   : \033[1;32m%3.1f W\033[0m" % res['pv_out']
         return 0
 
 
@@ -200,15 +201,15 @@ def main():
     options         (arg)
     opt             = arg.parse_args()
 
-    opt.date        = opt.date.split("-")
-    opt.year        = int(opt.date[0])
-    opt.month       = int(opt.date[1])
-    opt.day         = int(opt.date[2])
+    parse_d         = opt.date.split("-")
+    opt.year        = int(parse_d[0])
+    opt.month       = int(parse_d[1])
+    opt.day         = int(parse_d[2])
 
-    opt.time        = opt.time.split(":")
-    opt.hour        = int(opt.time[0])
-    opt.min         = int(opt.time[1])
-    opt.sec         = int(opt.time[2])
+    parse_t         = opt.time.split(":")
+    opt.hour        = int(parse_t[0])
+    opt.min         = int(parse_t[1])
+    opt.sec         = int(parse_t[2])
 
     dst_off         = 0
     tz_off_deg      = 0 + opt.lon
