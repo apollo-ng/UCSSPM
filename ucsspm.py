@@ -4,9 +4,9 @@
 #
 #  @file    ucsspm.py
 #  @authors chrono
-#  @version V1.0.2 (Argument Tamer)
-#  @date    2014-11-10
-#  @brief   Unified Clear-Sky Solar Prediction Model (UCSSPM)
+#  @version V1.0.3 (Argument Tamer)
+#  @date    2014-11-15
+#  @brief   Unified Clear-Sky Solar output Prediction Model (UCSSPM)
 #  @status  Beta - Request for Comment, Re-Verification & Enhancement
 #
 ################################################################################
@@ -46,7 +46,7 @@ def options(arg):
 
     arg.add_argument( "-sc"                                                    ,\
     type            = float                                                    ,\
-    help            = "Solar Constant (@1AU) in kW/m² [Earth Default: 1361.0]" ,\
+    help            = "Solar Constant (@1AU) in kW/m² [Default: 1361.0]"       ,\
     default         = 1361.0                                                    )
 
     # Space/Time Pinpointing ###################################################
@@ -54,12 +54,12 @@ def options(arg):
     arg.add_argument( "-lat"                                                   ,\
     type            = float                                                    ,\
     help            = "Latitude in decimal degrees [Default: 48.0]"            ,\
-    default         = 48.0                                                      )
+    default         = 48.00000                                                  )
 
     arg.add_argument( "-lon"                                                   ,\
     type            = float                                                    ,\
     help            = "Longitude in decimal degrees [Default: 11.0]"           ,\
-    default         = 11.0                                                      )
+    default         = 11.00000                                                  )
 
     # Optional, only needed if barometric pressure not available to compute it.
     # If no value is supplied to either, an altitude of 0m (NN) will be default
@@ -187,7 +187,6 @@ def output(opt,res):
         return 0
 
 
-
 ################################################################################
 ##  MAIN  ######################################################################
 ################################################################################
@@ -260,7 +259,7 @@ def main():
 
     # Compute time of solar noon ###########################################
 
-    res['sol_n']    = ((12 + dst_off) - (res['eqt'] / 60))\
+    res['sol_n']    = ((12 + dst_off) - (res['eqt'] / 60))                      \
                     - ((tz_off_deg - opt.lon) / 15)
 
     # Compute solar zenith angle in DEG ####################################
@@ -292,8 +291,8 @@ def main():
         # Real value given, convert hPa to kPa
         opt.at_p    = opt.at_p / 10
     else:
-        # Estimate Pressure from height
-        opt.at_p    = math.pow(((288 - (0.0065 * (opt.alt - 0))) / 288),\
+        # Estimate Pressure from given altitude
+        opt.at_p    = math.pow(((288 - (0.0065 * (opt.alt - 0))) / 288),        \
                       (9.80665 / (0.0065 * 287))) * 101.325
 
     # Estimate air vapor pressure in kPa #######################################
